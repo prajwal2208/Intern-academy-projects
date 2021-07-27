@@ -1,0 +1,111 @@
+import pygame,sys
+import numpy as np
+from pygame.constants import QUIT
+pygame.init()
+width=504
+height=504
+screen= pygame.display.set_mode((width,height))
+pygame.display.set_caption("TIC TAC TOE")
+screen.fill((245,245,245))
+boardrow=3
+boardcol=3
+def grid():
+    pygame.draw.line(screen,(169,169,169),(20,168),(484,168),10)
+    pygame.draw.line(screen,(169,169,169),(20,336),(484,336),10)
+    pygame.draw.line(screen,(169,169,169),(168,20),(168,484),10)
+    pygame.draw.line(screen,(169,169,169),(336,20),(336,484),10)
+game=np.zeros((3,3))
+def draw_mark():
+    for r in range(boardrow):
+        for c in range(boardcol):
+            if game[r][c]==1:
+                pygame.draw.circle(screen,(255,23,32),(int(c*168+84),int(r*168+84)),65,5)
+            elif game[r][c]==2:
+                pygame.draw.line(screen,(128,128,128),(int(c*168+20),int(r*168+150)),(int(c*168+150),int(r*168+20)),10)
+                pygame.draw.line(screen,(128,128,128),(int(c*168+20),int(r*168+20)),(int(c*168+150),int(r*168+150)),10)
+
+def mark(row ,col,player):
+    game[row][col]=player
+def is_available(row,col):
+    return game[row][col]==0
+def victory(player):
+    for col in range(boardcol):
+        if game[0][col]==player and game[1][col]==player and game[2][col]==player:
+            draw_vertical_winning_line(col,player)
+            return True
+    for row in range(boardrow):
+        if game[row][0]==player and game[row][1]==player and game[row][2]==player: 
+            draw_horizontal_winning_line(row,player)
+            return True
+    if game[2][0]==player and game[1][1]==player and game[0][2]==player:
+        draw_desc_diag(player)
+        return True 
+    if game[0][0]==player and game[1][1]==player and game[2][2]==player:
+        draw_asc_diag(player)
+        return True 
+    return False                  
+clr=()
+def draw_vertical_winning_line(col,player):
+    posX=col*168+84
+    if player==1:
+        clr=(255,23,32)
+    elif player==2:
+        clr=(128,128,128)
+    pygame.draw.line(screen,clr,(posX,15),(posX, height-15),5)        
+def draw_horizontal_winning_line(row,player):
+    posY=row*168+84
+    if player==1:
+        clr=(255,23,32)
+    elif player==2:
+        clr=(128,128,128)
+    pygame.draw.line(screen,clr,(15,posY),(width-15,posY),5)        
+def draw_desc_diag(player):
+    if player==1:
+        clr=(255,23,32)
+    elif player==2:
+        clr=(128,128,128)
+    pygame.draw.line(screen,clr,(15,height-15),(width-15,15),5)        
+def draw_asc_diag(player):
+    if player==1:
+        clr=(255,23,32)
+    elif player==2:
+        clr=(128,128,128)
+    pygame.draw.line(screen,clr,(15,15),(width-15,height-15),5) 
+def restart():
+    screen.fill((245,245,245))
+    grid()
+    player=1
+    for row in range(boardrow):
+        for col in  range(boardcol):
+            game[row][col]=0
+
+grid()
+player=1  
+gameover=False  
+while True:
+    for event in pygame.event.get():
+        if event.type==pygame.QUIT:
+            sys.exit()
+        if event.type==pygame.MOUSEBUTTONDOWN and  not gameover:
+            mouseX=event.pos[0]
+            mouseY=event.pos[1]
+            myrow=int(mouseY//168)
+            mycol=int(mouseX//168)   
+            if is_available(myrow,mycol):
+                if player==1:
+                    mark(myrow ,mycol,player)
+                    if victory(player):
+                        gameover=True
+                    player=2
+                else:
+                    mark(myrow,mycol,player)
+                    if victory(player):
+                        gameover=True
+                    player=1
+            draw_mark()      
+            if 0 not in game:
+                print("board is full") 
+        if event.type==pygame.KEYDOWN:
+            if event.type==pygame.K_1:
+                restart()                 
+    pygame.display.update()
